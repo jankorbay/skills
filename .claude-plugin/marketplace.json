@@ -1,0 +1,16 @@
+{
+  "name": "jankorbay-skills",
+  "description": "Jan Korbay's Claude Code skills.",
+  "owner": {
+    "name": "Jan Korbay",
+    "url": "https://github.com/jankorbay"
+  },
+  "plugins": [
+    {
+      "name": "skills",
+      "source": "./plugins/skills",
+      "description": "Jan Korbay's skills: skill authoring and review, and more over time.",
+      "category": "productivity"
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+name: Validate skills
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install PyYAML (the linter falls back to a minimal parser without it)
+        run: pip install pyyaml
+
+      - name: Lint skills
+        run: python3 plugins/skills/skills/create-skill/scripts/lint_skill.py plugins/
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Validate marketplace and plugin manifests
+        run: |
+          claude plugin validate .
+          claude plugin validate plugins/skills
+
+      - name: Check every skill is listed in the README
+        run: |
+          missing=0
+          for dir in plugins/skills/skills/*/; do
+            name=$(basename "$dir")
+            if ! grep -q "/skills:${name}" README.md; then
+              echo "::error file=README.md::Skill '${name}' is missing from the README skills table"
+              missing=1
+            fi
+          done
+          exit $missing

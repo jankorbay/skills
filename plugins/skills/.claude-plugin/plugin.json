@@ -1,0 +1,13 @@
+{
+  "name": "skills",
+  "displayName": "Jan Korbay's Skills",
+  "description": "Jan Korbay's Claude Code skills: create-skill and review-skills, with more to come.",
+  "author": {
+    "name": "Jan Korbay",
+    "url": "https://github.com/jankorbay"
+  },
+  "homepage": "https://github.com/jankorbay/skills",
+  "repository": "https://github.com/jankorbay/skills",
+  "license": "MIT",
+  "keywords": ["skills", "skill-authoring", "skill-review", "best-practices"]
+}
