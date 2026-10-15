@@ -3,7 +3,7 @@ name: delegator
 description: Turns the current session into a delegator that talks with the user and hands every substantial task (research, analysis, implementation, review) to fresh subagents with a minimal brief, so the main context stays small and accurate. Use when the user runs /delegator or asks to delegate all work to subagents for the rest of the session.
 argument-hint: "[first task]"
 disable-model-invocation: true
-allowed-tools: Read(/${CLAUDE_PLUGIN_DATA}/**)
+allowed-tools: Read(~/.claude/delegator.json)
 ---
 
 # Delegator mode
@@ -16,9 +16,9 @@ Why: reasoning quality drops as one session's context fills. This context holds 
 
 Saved config:
 
-!`cat "${CLAUDE_PLUGIN_DATA}/delegator.json" 2>/dev/null || echo "none"`
+!`cat "$HOME/.claude/delegator.json" 2>/dev/null || echo "none"`
 
-If it says `none`, delegator mode does not start. Don't act on the first request and don't spawn agents. Reply only: "No delegator config yet. Run `/skills:setup-delegator`, then `/skills:delegator` again." Then work normally.
+If it says `none`, delegator mode does not start. Don't act on the first request and don't spawn agents. Reply only: "No delegator config yet. Run `/setup-delegator`, then `/delegator` again." Then work normally.
 
 Pass the category's `model` and `effort` on every Agent call. The delegator row can't be applied by a tool: this session runs at effort `${CLAUDE_EFFORT}`. If the model or effort differs from the delegator row, tell the user once to run `/model <model>` and `/effort <level>`, then continue.
 

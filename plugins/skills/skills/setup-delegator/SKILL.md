@@ -3,17 +3,17 @@ name: setup-delegator
 description: Configures the delegator skill by choosing the model and effort level for the delegator session and for research, implementation, and review subagents, and whether every implementation gets a separate review agent. Use when the user runs /setup-delegator or wants to change delegator models, effort levels, or review settings.
 disable-model-invocation: true
 allowed-tools:
-  - Read(/${CLAUDE_PLUGIN_DATA}/**)
-  - Edit(/${CLAUDE_PLUGIN_DATA}/delegator.json)
+  - Read(~/.claude/delegator.json)
+  - Edit(~/.claude/delegator.json)
 ---
 
 # Set up the delegator
 
-Write the delegator's config to `${CLAUDE_PLUGIN_DATA}/delegator.json`. That directory survives plugin updates.
+Write the delegator's config to `~/.claude/delegator.json`. The same path works whether the skills were installed as a plugin or with `npx skills`, and it survives updates.
 
 Current config:
 
-!`cat "${CLAUDE_PLUGIN_DATA}/delegator.json" 2>/dev/null || echo "none"`
+!`cat "$HOME/.claude/delegator.json" 2>/dev/null || echo "none"`
 
 ## 1. List what's available
 
@@ -58,5 +58,5 @@ Write the file with exactly this shape:
 
 Then tell the user:
 
-- The saved path, and that `/skills:delegator` reads it at start. If delegator mode is already active in this session, use the new values from now on.
+- The saved path, and that `/delegator` reads it at start. If delegator mode is already active in this session, use the new values from now on.
 - No tool can switch the main session's model, so the delegator row needs `/model <model>` and `/effort <level>`. Pressing Enter in those pickers saves the choice as the default; `s` applies it to this session only.

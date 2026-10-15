@@ -1,8 +1,19 @@
 # Jan Korbay's Skills
 
-Skills for [Claude Code](https://code.claude.com), packaged as a plugin and installable from this repository's marketplace.
+Skills for [Claude Code](https://code.claude.com). Install them as a plugin from this repository's marketplace, or as standalone skills with [`npx skills`](https://github.com/vercel-labs/skills).
 
 ## Installation
+
+Pick one method. Both install the same skills; only the command names differ:
+
+| Method | You type | Updates |
+|---|---|---|
+| [Plugin](#as-a-plugin) | `/skills:setup-delegator` (the `/` menu shows the prefix; the bare `/setup-delegator` also works if no other command uses that name) | `claude plugin update` |
+| [`npx skills`](#with-npx-skills) | `/setup-delegator` | `npx skills update` |
+
+Don't use both at once, or every skill is listed twice.
+
+### As a plugin
 
 Add this repository as a marketplace, then install the plugin:
 
@@ -21,7 +32,7 @@ Inside a Claude Code session, the same commands work as `/plugin marketplace add
 
 The plugin installs for your user by default (all projects). To share it with a project's team through the repo's `.claude/settings.json`, add `--scope project`.
 
-### Updating
+#### Updating
 
 The plugin has no pinned version, so every commit to `main` is a new release:
 
@@ -30,23 +41,39 @@ claude plugin marketplace update jankorbay-skills
 claude plugin update skills@jankorbay-skills
 ```
 
-### Uninstalling
+#### Uninstalling
 
 ```bash
 claude plugin uninstall skills@jankorbay-skills
 claude plugin marketplace remove jankorbay-skills
 ```
 
+### With `npx skills`
+
+Installs each skill into `~/.agents/skills/` and links it into `~/.claude/skills/`, so Claude Code treats it as a personal skill with no prefix:
+
+```bash
+npx skills@latest add jankorbay/skills -g             # all skills, for your user
+npx skills@latest add jankorbay/skills -g -s delegator -s setup-delegator   # only some
+```
+
+Drop `-g` to install into the current project instead. Install skills in these groups, because each needs the other:
+
+- `review-skills` needs `create-skill` (it uses its checklist and linter).
+- `delegator` needs `setup-delegator` (it writes the config).
+
+Update with `npx skills update`, remove with `npx skills remove`.
+
 ## Skills
 
-Plugin skills are namespaced: type them as `/skills:<skill-name>`.
+The table shows plugin names. With `npx skills`, drop the `skills:` prefix: `/skills:create-skill` becomes `/create-skill`.
 
 | Skill | Invocation | Description |
 |---|---|---|
 | [`create-skill`](plugins/skills/skills/create-skill/SKILL.md) | `/skills:create-skill [what it should do]`, or Claude loads it automatically when you ask to create a skill | Creates and edits skills following Anthropic's current skill-authoring best practices and Claude Code's skill features (invocation control, arguments, allowed-tools, forked context). Includes a linter for the mechanical rules. |
 | [`review-skills`](plugins/skills/skills/review-skills/SKILL.md) | `/skills:review-skills [scope]` (manual only) | Audits your skills, proposes concrete fixes, iterates on them with you, and applies only the ones you approve, until you're satisfied. |
 | [`delegator`](plugins/skills/skills/delegator/SKILL.md) | `/skills:delegator [first task]` (manual only; run `/skills:setup-delegator` first) | Turns the session into a delegator that talks with you and hands research, implementation, and review to fresh subagents with minimal briefs, keeping the main context small. |
-| [`setup-delegator`](plugins/skills/skills/setup-delegator/SKILL.md) | `/skills:setup-delegator` (manual only) | Picks the model and effort for the delegator and its research, implementation, and review subagents, and whether each implementation gets a separate review. |
+| [`setup-delegator`](plugins/skills/skills/setup-delegator/SKILL.md) | `/skills:setup-delegator` (manual only) | Picks the model and effort for the delegator and its research, implementation, and review subagents, and whether each implementation gets a separate review. Saves them to `~/.claude/delegator.json`. |
 
 ### `create-skill` and Anthropic's `skill-creator`
 
@@ -97,7 +124,7 @@ python3 plugins/skills/skills/create-skill/scripts/lint_skill.py plugins/
 claude plugin validate .
 ```
 
-To try local changes without pushing: `claude plugin marketplace add ./` from the repo root, then install as above.
+To try local changes without pushing: `claude plugin marketplace add ./` from the repo root, then install as above. To check the `npx skills` path, `npx skills@latest add ./ --list` should list every skill.
 
 ## License
 

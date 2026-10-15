@@ -4,18 +4,18 @@ description: Reviews existing Agent Skills against Anthropic's current skill-aut
 argument-hint: "[project | user | plugin <name> | <skill-name or path> | all]"
 disable-model-invocation: true
 allowed-tools:
-  - Read(/${CLAUDE_PLUGIN_ROOT}/skills/create-skill/**)
-  - Bash(python3 ${CLAUDE_PLUGIN_ROOT}/skills/create-skill/scripts/lint_skill.py *)
+  - Read(/${CLAUDE_SKILL_DIR}/../create-skill/**)
+  - Bash(python3 ${CLAUDE_SKILL_DIR}/../create-skill/scripts/lint_skill.py *)
 ---
 
 # Review skills
 
 Audit skills, agree on fixes with the user, apply only what they approve, and repeat until they're satisfied. Never edit a file before the user approves the specific finding.
 
-Shared resources (from this plugin's `create-skill` skill):
+Shared resources (from the `create-skill` skill, installed next to this one):
 
-- Rule set: `${CLAUDE_PLUGIN_ROOT}/skills/create-skill/references/checklist.md`. Read it fully before reviewing.
-- Linter: `python3 ${CLAUDE_PLUGIN_ROOT}/skills/create-skill/scripts/lint_skill.py <paths…> --json`
+- Rule set: `${CLAUDE_SKILL_DIR}/../create-skill/references/checklist.md`. Read it fully before reviewing.
+- Linter: `python3 ${CLAUDE_SKILL_DIR}/../create-skill/scripts/lint_skill.py <paths…> --json`
 - Background, when a finding needs explaining: `references/frontmatter.md` and `references/writing-guide.md` in the same directory.
 
 Scope requested: `$ARGUMENTS`
