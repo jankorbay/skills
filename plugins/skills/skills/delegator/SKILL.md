@@ -20,7 +20,7 @@ Saved config:
 
 If it says `none`, delegator mode does not start. Don't act on the first request and don't spawn agents. Reply only: "No delegator config yet. Run `/setup-delegator`, then `/delegator` again." Then work normally.
 
-Pass the category's `model` and `effort` on every Agent call. A coordinator (see "Fan out through a coordinator") gets the delegator row. The delegator row can't be applied by a tool: this session runs at effort `${CLAUDE_EFFORT}`. If the model or effort differs from the delegator row, tell the user once to run `/model <model>` and `/effort <level>`, then continue.
+Pass the category's `model` and `effort` on every Agent call. A coordinator gets the delegator row. The delegator row can't be applied by a tool: this session runs at effort `${CLAUDE_EFFORT}`. If the model or effort differs from the delegator row, tell the user once to run `/model <model>` and `/effort <level>`, then continue.
 
 ## Do it yourself or delegate
 
@@ -72,13 +72,10 @@ Every report also states what the subagent could not do or verify, and any open 
 
 ## Run tasks
 
-One goal that splits into several workers goes to a coordinator, not to the workers directly; see the next section. The rules below cover the agents you launch yourself.
-
-Before launching, check which tasks block others. A task is blocked when it needs another task's output or edits the same files. This is a quick check, not a planning step: if no blocker is obvious, treat the tasks as independent.
+Before launching, check which tasks block others. A task is blocked when it needs another task's output or edits the same files. If no blocker is obvious, treat the tasks as independent.
 
 - Launch every unblocked task at once, in one message.
-- Start a blocked task when its blocker reports, with the blocker's result in its brief's Context section. Chain the rest the same way.
-- If only some tasks are blocked, launch the free ones now and queue the rest. In the ledger, mark queued tasks "blocked by <task>".
+- Start a blocked task when its blocker reports, with the blocker's result in its brief's Context section. Until then, mark it "blocked by <task>" in the ledger.
 - When two or more implementation agents run at the same time, give each `isolation: "worktree"`. Afterwards, delegate merging their branches as another implementation task.
 - For a follow-up on the same task, `SendMessage` the agent that did it; it keeps its context. Start a fresh agent with a better brief instead if the first one went off track.
 - Subagents run in the background. Tell the user in one line what is running, then wait for the notification. Never state a result before it arrives.
@@ -103,18 +100,16 @@ You coordinate; workers do the work.
 - If you have no Agent tool, do the work yourself.
 ```
 
-For a follow-up, `SendMessage` the coordinator; it keeps its workers' results.
-
 ## Review after implementation
 
-If `review_after_implementation` is `true`, after each implementation agent or implementation coordinator reports done, start a **fresh** review agent (never the implementer or its coordinator). Its brief contains:
+If `review_after_implementation` is `true`, after each implementer (the implementation agent, or its coordinator) reports done, start a **fresh** review agent, never the implementer. Its brief contains:
 
 - the user's original goal, quoted
 - the "Done when" criteria
 - the changed files or the worktree branch
 - "Verify by reading the changes and running the relevant tests. Report pass/fail per criterion with file:line. Do not edit files."
 
-On failures, `SendMessage` the findings to the implementer (or its coordinator), then review again. After two failed rounds, stop and ask the user.
+On failures, `SendMessage` the findings to the implementer, then review again. After two failed rounds, stop and ask the user.
 
 If `false`, relay the implementer's report and say it is unreviewed.
 
