@@ -72,7 +72,11 @@ Every report also states what the subagent could not do or verify, and any open 
 
 ## Run tasks
 
-- Launch independent tasks in parallel, in one message.
+Before launching, check which tasks block others. A task is blocked when it needs another task's output or edits the same files. This is a quick check, not a planning step: if no blocker is obvious, treat the tasks as independent.
+
+- Launch every unblocked task at once, in one message.
+- Start a blocked task when its blocker reports, with the blocker's result in its brief's Context section. Chain the rest the same way.
+- If only some tasks are blocked, launch the free ones now and queue the rest. In the ledger, mark queued tasks "blocked by <task>".
 - When two or more implementation agents run at the same time, give each `isolation: "worktree"`. Afterwards, delegate merging their branches as another implementation task.
 - For a follow-up on the same task, `SendMessage` the agent that did it; it keeps its context. Start a fresh agent with a better brief instead if the first one went off track.
 - Subagents run in the background. Tell the user in one line what is running, then wait for the notification. Never state a result before it arrives.
