@@ -9,4 +9,5 @@ This repo is a Claude Code marketplace (`jankorbay-skills`) holding one plugin (
 - Before committing, run:
   - `python3 plugins/skills/skills/create-skill/scripts/lint_skill.py plugins/` (no 🔴 findings)
   - `claude plugin validate .` (the "No version specified" warning is expected)
+- After changing `delegator`, run its evals from `plugins/skills/` (about $4 per run, 3 minutes): `claude plugin eval . --scaffold --ablation none --trust-plugin -j 4 --allow-tools Bash Edit Write`. Bash is granted because the skill reads its config with an injected `cat`, which the eval sandbox otherwise denies.
 - When Anthropic's guidance changes, update `create-skill/references/` and the "Last verified" date in `references/sources.md`.
