@@ -20,7 +20,7 @@ Saved config:
 
 If it says `none`, delegator mode does not start. Don't act on the first request and don't spawn agents. Reply only: "No delegator config yet. Run `/setup-delegator`, then `/delegator` again." Then work normally.
 
-Pass the category's `model` and `effort` on every Agent call. The delegator row can't be applied by a tool: this session runs at effort `${CLAUDE_EFFORT}`. If the model or effort differs from the delegator row, tell the user once to run `/model <model>` and `/effort <level>`, then continue.
+Pass the category's `model` and `effort` on every Agent call. A coordinator (see "Fan out through a coordinator") gets the delegator row. The delegator row can't be applied by a tool: this session runs at effort `${CLAUDE_EFFORT}`. If the model or effort differs from the delegator row, tell the user once to run `/model <model>` and `/effort <level>`, then continue.
 
 ## Do it yourself or delegate
 
@@ -72,6 +72,8 @@ Every report also states what the subagent could not do or verify, and any open 
 
 ## Run tasks
 
+One goal that splits into several workers goes to a coordinator, not to the workers directly; see the next section. The rules below cover the agents you launch yourself.
+
 Before launching, check which tasks block others. A task is blocked when it needs another task's output or edits the same files. This is a quick check, not a planning step: if no blocker is obvious, treat the tasks as independent.
 
 - Launch every unblocked task at once, in one message.
@@ -82,16 +84,37 @@ Before launching, check which tasks block others. A task is blocked when it need
 - Subagents run in the background. Tell the user in one line what is running, then wait for the notification. Never state a result before it arrives.
 - Don't redo or spot-check a subagent's work yourself. If a report looks doubtful, delegate a check.
 
+## Fan out through a coordinator
+
+When one goal splits into several workers, such as five reviewers on different parts of the code or three researchers comparing libraries, don't spawn the workers yourself. Spawn one coordinator. It runs the workers, reads their reports, and returns one report. The workers' raw reports never reach this context.
+
+Separate user requests with separate goals still launch directly, one agent each: their reports go to the user anyway.
+
+The coordinator is a `general-purpose` agent (`Explore` and `Plan` can't spawn agents) with the delegator row's `model` and `effort`. Its brief uses the usual template. Report is the row for the overall task, and Constraints adds:
+
+```markdown
+You coordinate; workers do the work.
+- Split the goal into worker tasks. Brief each worker with the same sections as this brief: Goal, Context, Constraints, Done when, Report.
+- Spawn workers as `<subagent_type>` with model `<model>` and effort `<effort>` (the worker category's row).
+- A worker is blocked when it needs another worker's output or edits the same files. Launch unblocked workers at once; start a blocked one when its blocker reports, with the blocker's result in its brief.
+- Workers that edit files at the same time each get `isolation: "worktree"`. Merge their branches before you report.
+- Read each report as it arrives. Check doubtful claims with a worker, drop duplicates and anything outside the goal, and resolve conflicts between reports.
+- Return one consolidated report, not a list of worker reports.
+- If you have no Agent tool, do the work yourself.
+```
+
+For a follow-up, `SendMessage` the coordinator; it keeps its workers' results.
+
 ## Review after implementation
 
-If `review_after_implementation` is `true`, after each implementation agent reports done, start a **fresh** review agent (never the implementer). Its brief contains:
+If `review_after_implementation` is `true`, after each implementation agent or implementation coordinator reports done, start a **fresh** review agent (never the implementer or its coordinator). Its brief contains:
 
 - the user's original goal, quoted
 - the "Done when" criteria
 - the changed files or the worktree branch
 - "Verify by reading the changes and running the relevant tests. Report pass/fail per criterion with file:line. Do not edit files."
 
-On failures, `SendMessage` the findings to the implementer, then review again. After two failed rounds, stop and ask the user.
+On failures, `SendMessage` the findings to the implementer (or its coordinator), then review again. After two failed rounds, stop and ask the user.
 
 If `false`, relay the implementer's report and say it is unreviewed.
 
