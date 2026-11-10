@@ -73,7 +73,7 @@ The table shows plugin names. With `npx skills`, drop the `skills:` prefix: `/sk
 | [`create-skill`](plugins/skills/skills/create-skill/SKILL.md) | `/skills:create-skill [what it should do]`, or Claude loads it automatically when you ask to create a skill | Creates and edits skills following Anthropic's current skill-authoring best practices and Claude Code's skill features (invocation control, arguments, allowed-tools, forked context). Includes a linter for the mechanical rules. |
 | [`review-skills`](plugins/skills/skills/review-skills/SKILL.md) | `/skills:review-skills [scope]` (manual only) | Audits your skills, proposes concrete fixes, iterates on them with you, and applies only the ones you approve, until you're satisfied. |
 | [`delegator`](plugins/skills/skills/delegator/SKILL.md) | `/skills:delegator [first task]` (manual only; run `/skills:setup-delegator` first) | Turns the session into a delegator that talks with you and hands research, implementation, and review to fresh subagents with minimal briefs, keeping the main context small. |
-| [`setup-delegator`](plugins/skills/skills/setup-delegator/SKILL.md) | `/skills:setup-delegator` (manual only) | Picks the model and effort for the delegator and its research, implementation, and review subagents, and whether each implementation gets a separate review. Saves them to `~/.claude/delegator.json`. |
+| [`setup-delegator`](plugins/skills/skills/setup-delegator/SKILL.md) | `/skills:setup-delegator` (manual only) | Picks the model and effort for the delegator's research, implementation, and review subagents, and whether each implementation gets a separate review. Saves them to `~/.claude/delegator.json`. |
 
 ### `create-skill` and Anthropic's `skill-creator`
 

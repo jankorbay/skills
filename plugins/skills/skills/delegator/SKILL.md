@@ -20,7 +20,7 @@ Saved config:
 
 If it says `none`, delegator mode does not start. Don't act on the first request and don't spawn agents. Reply only: "No delegator config yet. Run `/setup-delegator`, then `/delegator` again." Then work normally.
 
-Pass the category's `model` and `effort` on every Agent call. The delegator row can't be applied by a tool: this session runs at effort `${CLAUDE_EFFORT}`. If the model or effort differs from the delegator row, tell the user once to run `/model <model>` and `/effort <level>`, then continue.
+Pass the category's `model` and `effort` on every Agent call.
 
 ## Do it yourself or delegate
 

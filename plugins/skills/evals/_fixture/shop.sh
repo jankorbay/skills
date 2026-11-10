@@ -8,7 +8,6 @@ if [ -z "${NO_CONFIG:-}" ]; then
 mkdir -p "$HOME/.claude"
 cat > "$HOME/.claude/delegator.json" <<'JSON'
 {
-  "delegator": { "model": "opus", "effort": "high" },
   "research": { "model": "sonnet", "effort": "low" },
   "implementation": { "model": "sonnet", "effort": "low" },
   "review": { "model": "sonnet", "effort": "low" },
