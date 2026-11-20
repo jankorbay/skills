@@ -11,7 +11,9 @@ A one-off cleanup pass over the comments in `$ARGUMENTS` (the whole repo when em
 
 Comments are fine when they carry information. The test for every comment:
 
-> **Would an agent editing this code make a mistake without this comment?** Yes → keep it. No → delete it.
+> **Would an agent editing this code make a mistake without this comment?**
+
+The test is binary. A comment passes only when you can name the concrete mistake in one sentence: "without it, an agent would delete the `cat`". No mistake named → DELETE, or shorten the comment to the part that prevents one. There is no "unsure" outcome: a comment that only sounds useful fails.
 
 Clear code beats comments. A comment that explains *what* the code does is either redundant (delete it) or a sign the code isn't clear enough (flag it as UNCLEAR). The goal is fewer comments, not comments moved elsewhere. An ADR (architecture decision record) is rare; zero new ADRs is a normal outcome.
 
@@ -19,16 +21,18 @@ Clear code beats comments. A comment that explains *what* the code does is eithe
 
 | Bucket | What it covers | Action |
 |---|---|---|
-| **DELETE** | Obsolete (no longer matches the code), redundant (repeats what names, types or code say), session notes ("moved from X", "now that Y is extracted", "previously"), commented-out code, docblocks that only repeat parameter names, issue references outside a TODO (`// see #482`, `// JIRA-1234`), section dividers, step narration in tests ("arrange", "act") | Delete after approval |
+| **DELETE** | Obsolete (no longer matches the code), redundant (repeats what names, types or code say), summary docblocks that restate the class, method, property or constant name, narration of what the code does, a *why* already stated by a name, a type, a test, a parent docblock or an ADR, session notes ("moved from X", "now that Y is extracted", "previously"), commented-out code, docblocks that only repeat parameter names, issue references outside a TODO (`// see #482`, `// JIRA-1234`), section dividers, step narration in tests ("arrange", "act") | Delete after approval |
 | **SUSPECT** | The comment and the code disagree, and the code may be the wrong one | Don't touch. Report as a possible bug |
 | **UNCLEAR** | Explains *what* code does that can't be read without it | Don't touch. Report with the code fix that would make the comment unnecessary: a better name, an extracted function, a named constant |
-| **KEEP** | Passes the test: ordering rules ("must run before `initAuth()`"), workarounds for library quirks, the meaning of a magic value, a short pointer to an ADR that still governs this code (`// See docs/adr/0007-event-sourcing.md`), a TODO that references a GitHub issue | Keep. Shorten if long. Drop any issue reference from a non-TODO comment, keep the reason |
+| **KEEP** | Passes the test, with the mistake named: ordering rules ("must run before `initAuth()`"), workarounds for library quirks, the meaning of a magic value, a promise every implementation of an interface must keep, a limit shared with another component, a duplicate made on purpose, a short pointer to an ADR that still governs this code (`// See docs/adr/0007-event-sourcing.md`), a TODO that references a GitHub issue | Keep. Shorten to the part that prevents the mistake. Drop any issue reference from a non-TODO comment, keep the reason |
 | **TODO** | A `TODO`, `FIXME`, `HACK` or `XXX` marker without a GitHub issue reference | Don't touch. List for the user, who decides per item: delete it, or open an issue and add its reference |
 | **ADR** | A decision that passes all three ADR tests | Propose an ADR; once it exists, the comment becomes a one-line pointer to it |
 
 A TODO with a GitHub issue reference is the only comment allowed to reference an issue. A pointer to an ADR that no longer exists or no longer applies is obsolete.
 
-When a comment explains *why*, it is never a plain DELETE: it is KEEP, SUSPECT or ADR, unless the why is now false (obsolete).
+A *why* gets no exemption from the test. It is DELETE when it is false (obsolete) or already stated by a name, a type, a test, a parent docblock or an ADR. Otherwise it is KEEP, SUSPECT or ADR.
+
+For worked examples of right and wrong KEEPs, see [references/calibration.md](references/calibration.md).
 
 **Never touch:**
 
@@ -60,16 +64,19 @@ Give each subagent:
 
 - its part's paths
 - this skill's keep test, [Buckets](#buckets) section and the three ADR tests (copy them in; the subagent can't see this file)
+- the path `${CLAUDE_SKILL_DIR}/references/calibration.md`, to read before starting
 - a one-line description of each neighbouring part, so it recognises comments about code outside its part
 - the instruction: **read-only, edit no file**
 
-Each subagent reads every comment with the code around it and returns one row per comment: `file:line`, bucket, a one-line reason, and for a shortened KEEP the new text.
+Each subagent reads every comment with the code around it and returns one row per comment: `file:line`, bucket, a one-line reason, and for a shortened KEEP the new text. A KEEP row's reason names the mistake it prevents: "without it, an agent would …". Comments under **Never touch** need no row.
+
+Tell subagents that KEEP rows must not be left out, even to save tokens. An unlisted KEEP can't be checked, so keeping becomes the choice that costs nothing.
 
 ## Step 3: Merge
 
 - Re-check every ADR candidate against the three tests yourself, and demote any that fail to KEEP or DELETE.
 - Merge duplicate ADR candidates across parts: one decision, one ADR, listing every path it governs.
-- Spot-check about 10 DELETE rows per part against the code. More than one wrong → re-run that part.
+- Spot-check about 10 DELETE rows and 10 KEEP rows per part against the code. A KEEP is wrong when its named mistake isn't one an agent would make, or a name, a type, a test, a parent docblock or an ADR already prevents it. More than one wrong in either set → re-run that part.
 
 ## Step 4: Report in chat, then stop
 
